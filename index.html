@@ -66,6 +66,10 @@ int main() {
     const int e{0}; // non modifiable variable
     ++e; // Error
 
+    auto f = 5; // int f = 5;
+    auto g = 6ll; // long long g = 6;
+    const auto h = 3.5; // const double h = 3.5;
+
     return 0;
 }
     </code></pre>
@@ -187,6 +191,28 @@ int main() { // program entry
     cout &lt;&lt; average(vec) &lt;&lt; endl; // output: 3
     return 0;
 }
+    </code></pre>
+  </section>
+
+  <section>
+      <p>Using lmabda<p>
+    <pre><code class="c++" data-noescape>
+#include&lt;iostream&gt;
+#include&lt;vector&gt;
+#include&lt;algorithm&gt;
+using namespace std;
+int main() {
+    vector&lt;int&gt; vec = {1, 2, 3, 4};
+
+    auto negate = [](int& e) { e *= -1; };
+    for_each(vec.begin(), vec.end(), negate);
+
+    for_each(vec.begin(), vec.end(), [](int e) {
+            cout &lt;&lt; e &lt;&lt; ' ';
+    }); // prints: -1 -2 -3 -4
+
+    return 0;
+};
     </code></pre>
   </section>
 
