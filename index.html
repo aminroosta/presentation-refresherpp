@@ -42,7 +42,7 @@
                         <div class="slides">
 
   <section>
-    <h1 style="position:relative; width:120%; left:-12%; font-family: initial !important;">C++ Intrudoction</h2>
+    <h1 style="position:relative; width:120%; left:-12%; font-family: initial !important;">C++ Introduction</h2>
     <p>Part 1</p>
   </section>
   <section>
@@ -151,12 +151,12 @@ int main() {
     std::vector&lt;int&gt; w{3};    // { 0, 0, 0 }
     w.pop_back();                   // { 0, 0 }
 
-    std::vector&lt;int&gt; y = { 1, 2, 3, 4 }; // { 1, 2, 3 }
-    y.push_back(5);                 // { 1, 2, 3, 4 }
+    std::vector&lt;int&gt; y = { 1, 2, 3, 4 }; // { 1, 2, 3, 4 }
+    y.push_back(5);                 // { 1, 2, 3, 4, 5 }
 
     int sum_y = 0;
     // subscript for loop
-    for(size_t idx = 0; idx &lt; y.size(); ++idx) { sum_y += y[idx]; }
+    for(std::size_t idx = 0; idx &lt; y.size(); ++idx) { sum_y += y[idx]; }
 
     // using iterators
     for(auto itr = y.begin(); itr != y.end(); ++itr) {
@@ -164,7 +164,7 @@ int main() {
     }
 
     // range based for look
-    for(int&amp; e : y) { sum_y += e; }
+    for(auto e : y) { sum_y += e; }
     
     return 0;
 }
@@ -231,7 +231,7 @@ int main() {
         arr[idx] = idx;
     }
 
-    std::array&lt;int, length&gt; squared; // squared = {0, 0, 0, 0, 0}
+    std::array&lt;int, length&gt; squared{}; // squared = {0, 0, 0, 0, 0}
     std::transform( arr.begin(), arr.end(),
         squared.begin(), [](int e) { return e*e; }
     );
