@@ -96,14 +96,13 @@ int main() {
 #include&lt;string&gt;
 #include&lt;iostream&gt;
 
-using namespace std;
 int main() {
-    const string a{"one"}; // const string a = "one";
+    const std::string a{u8"one"}; // const string a = u8"one";
     const float f = 1.23f;
 
-    string b = a;
-    b += to_string(f);
-    cout &lt;&lt; b &lt;&lt; endl; // one1.230000
+    std::string b {a};
+    b += std::to_string(f);
+    std::cout &lt;&lt; b &lt;&lt; std::endl; // one1.230000
 
     return 0;
 };
@@ -111,7 +110,8 @@ int main() {
     </code></pre>
     <p> - Always use const for const variables! </p>
     <p> - Use = for premitive types. </p>
-    <p> - Use {} to intialized user defined types. </p>
+    <p> - Use {} to intialize user defined types. </p>
+    <p> - Always use u8"" so that we don't forget about it when dealing with non-ASCII text</p>
   </section>
 
   <section>
@@ -145,26 +145,26 @@ int main() {
     <pre><code class="c++" data-noescape>
 #include&lt;iostream&gt;
 #include&lt;vector&gt;
-using namespace std;
 
 int main() {
-    vector&lt;int&gt; w{3};   // { 0, 0, 0 }
-    w.pop_back();       // { 0, 0 }
+    std::vector&lt;int&gt; x{4, 1}; // { 1, 1, 1, ,1 }
+    std::vector&lt;int&gt; w{3};    // { 0, 0, 0 }
+    w.pop_back();                   // { 0, 0 }
 
-    vector&lt;int&gt; x{4, 1}; // { 1, 1, 1, ,1 }
-
-    vector&lt;int&gt; y = { 1, 2, 3, 4 }; // { 1, 2, 3 }
+    std::vector&lt;int&gt; y = { 1, 2, 3, 4 }; // { 1, 2, 3 }
     y.push_back(5);                 // { 1, 2, 3, 4 }
 
     int sum_y = 0;
-    for(size_t idx = 0; idx &lt; y.size(); ++idx) {
-        sum_y += y[idx];
+    // subscript for loop
+    for(size_t idx = 0; idx &lt; y.size(); ++idx) { sum_y += y[idx]; }
+
+    // using iterators
+    for(auto itr = y.begin(); itr != y.end(); ++itr) {
+        sum_y += *itr;
     }
 
-    sum_y = 0;
-    for(int e : y) {
-        sum_y += e;
-    }
+    // range based for look
+    for(int&amp; e : y) { sum_y += e; }
     
     return 0;
 }
@@ -177,7 +177,7 @@ int main() {
 #include&lt;iostream&gt; // preprocess directive
 #include&lt;vector&gt;    // bring vector declarations
 
-using namespace std; // make everthing in standard namespace visible
+using namespace std; // make everthing in standard namespace visible!
 double average(const vector&lt;int&gt; &amp; vec) {
     int total = 0;
     for(int e : vec) {
@@ -216,6 +216,35 @@ int main() {
   </section>
 
   <section>
+      <p>Using std::array&lt;T, N&gt;<p>
+    <pre><code class="c++" data-noescape>
+#include&lt;iostream&gt;
+#include&lt;array&gt;
+#include&lt;algorithm&gt; // std::transform
+#include&lt;numeric&gt; // std::accumulate
+
+int main() {
+    const int length = 5;
+
+    std::array&lt;int, length&gt; arr; // arr = { garbage, garbage, ... }
+    for(std::size_t idx = 0; idx &lt; arr.size(); ++idx) {
+        arr[idx] = idx;
+    }
+
+    std::array&lt;int, length&gt; squared; // squared = {0, 0, 0, 0, 0}
+    std::transform( arr.begin(), arr.end(),
+        squared.begin(), [](int e) { return e*e; }
+    );
+    // squared = { 0, 1, 4, 9, 16 }
+
+    auto sum = std::accumulate(squared.begin(), squared.end(), 0);
+    // sum = 30
+    return 0;
+};
+    </code></pre>
+  </section>
+
+  <section>
       <p>classes</p>
     <pre><code class="c++" data-noescape>
 #include&lt;iostream&gt;
@@ -240,6 +269,36 @@ int main() {
     const User user{"user", 20};
     user.print(); // {user,20}
     return 0;
+}
+    </code></pre>
+  </section>
+
+  <section>
+    <pre><code class="c++" data-noescape>
+// User.h
+#pragma once
+#include&lt;string&gt;
+
+class User {
+private:
+    int _age;
+    std::string _name;
+public:
+    User(std::string name, int age);
+    void print() const;
+};
+    </code></pre>
+    <pre><code class="c++" data-noescape>
+// User.cpp
+#include&lt;iostream&gt;
+#include "User.h"
+using namespace std;
+
+User::User(string name, int age)
+    :  _age(age), _name(name) { }
+
+void User::print() const {
+    cout &lt;&lt; '{' &lt;&lt; _name &lt;&lt; ',' &lt;&lt; _age &lt;&lt; '}' &lt;&lt; endl;
 }
     </code></pre>
   </section>
@@ -332,17 +391,24 @@ double norm_cdf(double value)
   </section>
 
   <section>
+      <p><a href="https://godbolt.org/g/VY3iX5">constexpr</a></p>
+      <img src="./constexpr_cdf.png" />
+      <p> - constexpr functions can be evaluted at compile time! </p>
+      <p> - Make mathematical functions contsexpr. </p>
+  </section>
+
+  <section>
     <pre><code class="c++" data-noescape>
 // This calculates d_j, for j in {1,2}. This term appears in the closed
 // form solution for the European call or put price
-double d_j(int j, double S, double K, double r, double v, double T) {
+constexpr double d_j(int j, double S, double K, double r, double v, double T) {
     return (log(S/K) + (r + (pow(-1,j-1))*0.5*v*v)*T)/(v*(pow(T,0.5)));
 }
 
 // Calculate the European vanilla call price based on
 // underlying S, strike K, risk-free rate r, volatility of
 // underlying sigma and time to maturity T
-double call_price(double S, double K, double r, double v, double T) {
+constexpr double call_price(double S, double K, double r, double v, double T) {
     return + S * norm_cdf(d_j(1, S, K, r, v, T))
            - K * exp(-r*T) * norm_cdf(d_j(2, S, K, r, v, T));
 }
@@ -350,7 +416,7 @@ double call_price(double S, double K, double r, double v, double T) {
 // Calculate the European vanilla put price based on
 // underlying S, strike K, risk-free rate r, volatility of
 // underlying sigma and time to maturity T
-double put_price(double S, double K, double r, double v, double T) {
+constexpr double put_price(double S, double K, double r, double v, double T) {
     return - S * norm_cdf(-d_j(1, S, K, r, v, T))
            + K * exp(-r*T) * norm_cdf(-d_j(2, S, K, r, v, T));
 }
@@ -363,20 +429,20 @@ double put_price(double S, double K, double r, double v, double T) {
 #include &lt;iostream&gt;
 #include &lt;cmath&gt;
 
-double norm_pdf(double x) {
+constexpr double norm_pdf(double x) {
     return (1.0/(pow(2*M_PI,0.5)))*exp(-0.5*x*x);
 }
-double norm_cdf(double value) {
+constexpr double norm_cdf(double value) {
    return 0.5 * erfc(-value * M_SQRT1_2);
 }
-double d_j(int j, double S, double K, double r, double v, double T) {
+constexpr double d_j(int j, double S, double K, double r, double v, double T) {
     return (log(S/K) + (r + (pow(-1,j-1))*0.5*v*v)*T)/(v*(pow(T,0.5)));
 }
-double call_price(double S, double K, double r, double v, double T) {
+constexpr double call_price(double S, double K, double r, double v, double T) {
     return + S * norm_cdf(d_j(1, S, K, r, v, T))
            - K * exp(-r*T) * norm_cdf(d_j(2, S, K, r, v, T));
 }
-double put_price(double S, double K, double r, double v, double T) {
+constexpr double put_price(double S, double K, double r, double v, double T) {
     return - S * norm_cdf(-d_j(1, S, K, r, v, T))
            + K * exp(-r*T) * norm_cdf(-d_j(2, S, K, r, v, T));
 }
